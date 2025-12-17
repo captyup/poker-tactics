@@ -118,7 +118,7 @@
         <h1 class="text-6xl font-bold mb-8">
             {{ game.gameState.winner === game.playerId ? $t('message.victory') : (game.gameState.winner === 'Draw' ? $t('message.draw') : $t('message.defeat')) }}
         </h1>
-        <button class="bg-white text-black text-xl px-8 py-3 rounded hover:bg-gray-200" @click="reload">{{ $t('message.playAgain') }}</button>
+        <button class="bg-white text-black text-xl px-8 py-3 rounded hover:bg-gray-200" @click="game.restartGame()">{{ $t('message.playAgain') }}</button>
     </div>
 
   </div>
@@ -329,7 +329,4 @@ const validMedicTargets = computed(() => {
     return me.value.discard_pile.filter(c => c.ability !== 'Hero');
 });
 
-function reload() {
-    window.location.reload();
-}
 </script>

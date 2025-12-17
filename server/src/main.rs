@@ -45,6 +45,13 @@ struct PassPayload {
     player_id: String,
 }
 
+#[derive(Debug, Deserialize)]
+struct RestartGamePayload {
+    room_id: String,
+    player_id: String,
+}
+
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
@@ -192,7 +199,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
              }
         });
+
+        let games_restart = games.clone();
+        socket.on("restart_game", move |socket: SocketRef, Data::<RestartGamePayload>(data)| async move {
+            info!("Player {} requesting restart for room {}", data.player_id, data.room_id);
+            let mut games_guard = games_restart.write().await;
+            
+            if let Some(game) = games_guard.get_mut(&data.room_id) {
+                // Only allow restart if game is over
+                if game.phase != GamePhase::GameEnd {
+                     let _ = socket.emit("error", "Cannot restart game while it is in progress");
+                     return;
+                }
+
+                info!("Restarting game in room {}", data.room_id);
+                let player_ids: Vec<String> = game.players.keys().cloned().collect();
+                let new_game_state = game_logic::init_game(data.room_id.clone(), player_ids);
+                *game = new_game_state;
+                
+                info!("Broadcasting new game state for room {}", data.room_id);
+                let _ = socket.within(data.room_id.clone()).emit("game_state_update", &game.clone()).await;
+            }
+        });
     });
+
 
     // Configure CORS
     let cors = CorsLayer::permissive();

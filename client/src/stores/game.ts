@@ -12,10 +12,10 @@ export const useGameStore = defineStore('game', () => {
 
     function connect() {
         if (socket.value) return;
-        
+
         const socketUrl = import.meta.env.VITE_APP_SOCKET_URL || 'http://localhost:3000';
         socket.value = io(socketUrl);
-        
+
         socket.value.on('connect', () => {
             console.log('Connected to', socketUrl);
         });
@@ -41,16 +41,16 @@ export const useGameStore = defineStore('game', () => {
     }
 
     function mulligan(cardIds: string[]) {
-        socket.value?.emit('mulligan', { 
-            room_id: roomId.value, 
+        socket.value?.emit('mulligan', {
+            room_id: roomId.value,
             player_id: playerId.value,
-            card_ids: cardIds 
+            card_ids: cardIds
         });
     }
 
     function playCard(cardId: string, targetId?: string) {
-        socket.value?.emit('play_card', { 
-            room_id: roomId.value, 
+        socket.value?.emit('play_card', {
+            room_id: roomId.value,
             player_id: playerId.value,
             card_id: cardId,
             target_id: targetId
@@ -58,8 +58,15 @@ export const useGameStore = defineStore('game', () => {
     }
 
     function passTurn() {
-         socket.value?.emit('pass', { 
-            room_id: roomId.value, 
+        socket.value?.emit('pass', {
+            room_id: roomId.value,
+            player_id: playerId.value
+        });
+    }
+
+    function restartGame() {
+        socket.value?.emit('restart_game', {
+            room_id: roomId.value,
             player_id: playerId.value
         });
     }
@@ -73,6 +80,7 @@ export const useGameStore = defineStore('game', () => {
         joinGame,
         mulligan,
         playCard,
-        passTurn
+        passTurn,
+        restartGame
     };
 });

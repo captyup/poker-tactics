@@ -1,17 +1,17 @@
 <template>
   <div class="game-board w-full h-full flex flex-col bg-green-800 p-4 text-white overflow-hidden" v-if="game.gameState">
     <!-- Opponent Area -->
-    <div class="opponent-area flex-1 flex flex-col items-center justify-start border-b border-green-700/50 pb-2">
-      <div class="flex items-center gap-4 mb-2">
-        <h2 class="text-xl font-bold">{{ $t('game.opponent') }}</h2>
-        <div class="badge bg-blue-600 px-2 py-1 rounded">{{ $t('game.score') }}: {{ opponent?.current_score }}</div>
-        <div class="badge bg-yellow-600 px-2 py-1 rounded">{{ $t('game.rounds') }}: {{ opponent?.rounds_won }}</div>
-        <div v-if="opponent?.passed" class="badge bg-gray-500 px-2 py-1 rounded">{{ $t('game.passed') }}</div>
-        <div class="badge bg-purple-600 px-2 py-1 rounded">{{ $t('game.hand') }}: {{ opponent?.hand.length }}</div>
+    <div class="opponent-area flex-1 flex flex-col items-center justify-start border-b border-green-700/50 pb-2 mt-8 md:mt-0">
+      <div class="flex flex-wrap items-center justify-center gap-2 mb-2 px-2">
+        <h2 class="text-xl font-bold mr-2">{{ $t('game.opponent') }}</h2>
+        <div class="badge bg-blue-600 px-2 py-1 rounded text-sm">{{ $t('game.score') }}: {{ opponent?.current_score }}</div>
+        <div class="badge bg-yellow-600 px-2 py-1 rounded text-sm">{{ $t('game.rounds') }}: {{ opponent?.rounds_won }}</div>
+        <div v-if="opponent?.passed" class="badge bg-gray-500 px-2 py-1 rounded text-sm">{{ $t('game.passed') }}</div>
+        <div class="badge bg-purple-600 px-2 py-1 rounded text-sm">{{ $t('game.hand') }}: {{ opponent?.hand.length }}</div>
       </div>
       
       <!-- Opponent Board -->
-      <div class="flex gap-2 flex-wrap justify-center min-h-[140px]">
+      <div class="flex gap-2 flex-wrap justify-center min-h-[140px] overflow-y-auto max-h-[30vh]">
         <CardComponent 
           v-for="card in opponent?.board" 
           :key="card.id" 
@@ -22,18 +22,18 @@
     </div>
 
     <!-- Center Info -->
-    <div class="center-area h-16 flex items-center justify-between px-8 bg-green-900/30">
-      <div class="text-lg">{{ $t('game.round') }}: {{ game.gameState.round_count }} / 3</div>
-      <div class="text-2xl font-bold text-yellow-400">
+    <div class="center-area min-h-12 py-1 flex flex-wrap items-center justify-between px-4 bg-green-900/30 gap-2">
+      <div class="text-sm md:text-lg">{{ $t('game.round') }}: {{ game.gameState.round_count }} / 3</div>
+      <div class="text-lg md:text-2xl font-bold text-yellow-400 text-center flex-1 mx-2">
         {{ message }}
       </div>
-      <div class="text-lg">{{ $t('game.phase') }}: {{ game.gameState.phase }}</div>
+      <div class="text-sm md:text-lg">{{ $t('game.phase') }}: {{ game.gameState.phase }}</div>
     </div>
 
     <!-- My Area -->
-    <div class="my-area flex-1 flex flex-col items-center justify-end pt-2 border-t border-green-700/50">
+    <div class="my-area flex-1 flex flex-col items-center justify-end pt-2 border-t border-green-700/50 overflow-hidden">
        <!-- My Board -->
-      <div class="flex gap-2 flex-wrap justify-center min-h-[140px] mb-4">
+      <div class="flex gap-2 flex-wrap justify-center min-h-[100px] md:min-h-[140px] mb-2 overflow-y-auto max-h-[30vh]">
         <CardComponent 
           v-for="card in me?.board" 
           :key="card.id" 
@@ -44,15 +44,15 @@
       </div>
 
       <!-- My Info -->
-      <div class="flex items-center gap-4 mb-2">
-        <h2 class="text-xl font-bold text-green-300">{{ $t('game.you') }}</h2>
-        <div class="badge bg-blue-600 px-2 py-1 rounded">{{ $t('game.score') }}: {{ me?.current_score }}</div>
-        <div class="badge bg-yellow-600 px-2 py-1 rounded">{{ $t('game.rounds') }}: {{ me?.rounds_won }}</div>
-        <div v-if="me?.passed" class="badge bg-gray-500 px-2 py-1 rounded">{{ $t('game.passed') }}</div>
+      <div class="flex flex-wrap items-center justify-center gap-2 mb-2 px-2">
+        <h2 class="text-xl font-bold text-green-300 mr-2">{{ $t('game.you') }}</h2>
+        <div class="badge bg-blue-600 px-2 py-1 rounded text-sm">{{ $t('game.score') }}: {{ me?.current_score }}</div>
+        <div class="badge bg-yellow-600 px-2 py-1 rounded text-sm">{{ $t('game.rounds') }}: {{ me?.rounds_won }}</div>
+        <div v-if="me?.passed" class="badge bg-gray-500 px-2 py-1 rounded text-sm">{{ $t('game.passed') }}</div>
         
         <button 
           v-if="canAction && !me?.passed && game.gameState.phase === 'Playing'"
-          class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-4 rounded"
+          class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-4 rounded text-sm"
           @click="game.passTurn()"
         >
           {{ $t('game.pass') }}
@@ -60,7 +60,7 @@
 
         <button 
             v-if="game.gameState.phase === 'Mulligan' && !me?.passed"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded text-sm"
             @click="confirmMulligan"
         >
             {{ selectedHandCards.length > 0 ? $t('game.confirmSwap', { count: selectedHandCards.length }) : $t('game.confirmSwap_no_args') }}
@@ -68,22 +68,24 @@
       </div>
 
       <!-- Hint Area -->
-      <div v-if="selectedCardHint" class="mb-2 h-8 flex items-center justify-center">
-          <div class="bg-black/50 px-4 py-1 rounded text-yellow-300 font-bold animate-pulse text-sm md:text-base">
-              {{ selectedCardHint }} <span class="text-white/70 font-normal text-xs ml-2">{{ $t('game.tapToConfirm') }}</span>
+      <div v-if="selectedCardHint" class="mb-1 h-6 flex items-center justify-center w-full px-2">
+          <div class="bg-black/50 px-2 py-1 rounded text-yellow-300 font-bold animate-pulse text-xs md:text-sm truncate max-w-full text-center">
+              {{ selectedCardHint }} <span class="text-white/70 font-normal text-[10px] ml-1 hidden md:inline">{{ $t('game.tapToConfirm') }}</span>
           </div>
       </div>
 
-      <!-- My Hand -->
-      <div class="flex gap-[-20px] justify-center pb-4 relative">
-        <CardComponent 
-          v-for="card in sortedHand" 
-          :key="card.id" 
-          :card="card" 
-          :isSelected="selectedHandCards.includes(card.id) || pendingCardId === card.id"
-          @click="handleHandClick(card)"
-          class="transition-all hover:z-10 hover:scale-110 mx-[-10px]"
-        />
+      <!-- My Hand (Scrollable) -->
+      <div class="w-full overflow-x-auto pb-4 pt-4 px-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+        <div class="flex flex-nowrap min-w-min justify-center -space-x-4 md:-space-x-6">
+            <CardComponent 
+            v-for="card in sortedHand" 
+            :key="card.id" 
+            :card="card" 
+            :isSelected="selectedHandCards.includes(card.id) || pendingCardId === card.id"
+            @click="handleHandClick(card)"
+            class="transition-all hover:z-10 hover:-translate-y-4 hover:scale-105 flex-shrink-0"
+            />
+        </div>
       </div>
     </div>
 

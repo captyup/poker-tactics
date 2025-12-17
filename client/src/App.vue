@@ -47,20 +47,25 @@
 
         <div v-if="mode === 'join'">
            <label class="block text-sm font-bold mb-2 text-gray-300">{{ $t('app.roomId') }}</label>
-           <input v-model="roomInput" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. 123456" @keyup.enter="join" />
+           <input v-model="roomInput" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500 mb-4" placeholder="e.g. 123456" @keyup.enter="join" />
         </div>
         
         <div v-else>
              <label class="block text-sm font-bold mb-2 text-gray-300">{{ $t('app.roomId') }}</label>
-             <div class="text-2xl font-mono font-bold text-green-400 text-center py-2 bg-gray-900 rounded border border-gray-700 mb-2">
+             <div class="text-2xl font-mono font-bold text-green-400 text-center py-2 bg-gray-900 rounded border border-gray-700 mb-4">
                  {{ roomInput }}
              </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold mb-2 text-gray-300">Player ID</label>
+            <input v-model="playerIdInput" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. 987654" @keyup.enter="join" />
         </div>
 
         <button 
           @click="join" 
           class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white font-bold py-3 rounded mt-4 transform transition hover:scale-105"
-          :disabled="!roomInput"
+          :disabled="!roomInput || !playerIdInput"
         >
           {{ $t('app.enter') }}
         </button>
@@ -82,6 +87,7 @@ import GameInstructions from '@/components/GameInstructions.vue';
 
 const game = useGameStore();
 const roomInput = ref('');
+const playerIdInput = ref('');
 const mode = ref<'start' | 'join' | null>(null);
 const showInstructions = ref(false);
 
@@ -89,9 +95,31 @@ onMounted(() => {
     // Check URL query params
     const params = new URLSearchParams(window.location.search);
     const roomParam = params.get('room');
+    
+    // Check localStorage
+    const savedRoomId = localStorage.getItem('poker_tactics_roomId');
+    const savedPlayerId = localStorage.getItem('poker_tactics_playerId');
+
     if (roomParam) {
         roomInput.value = roomParam;
         mode.value = 'join';
+        // If we have a saved player ID and the room matches (or we just want to reuse the player ID generally)
+        // Ideally we only reuse player ID if we think it's the same session. 
+        // But for simplicity, if we have a saved player ID, let's pre-fill it.
+        if (savedPlayerId) {
+             playerIdInput.value = savedPlayerId;
+        }
+    } else if (savedRoomId && savedPlayerId) {
+        // If no URL param, but we have saved state, we can pre-fill
+        roomInput.value = savedRoomId;
+        playerIdInput.value = savedPlayerId;
+        // Optionally auto-enter join mode if we have data
+        // mode.value = 'join'; 
+    }
+    
+    // If no player ID yet, generate one random default
+    if (!playerIdInput.value) {
+        playerIdInput.value = Math.floor(100000 + Math.random() * 900000).toString();
     }
 });
 
@@ -99,18 +127,28 @@ function startNewGame() {
     // Generate 6-digit random number
     const randomId = Math.floor(100000 + Math.random() * 900000).toString();
     roomInput.value = randomId;
+    // Generate formatted player ID if empty
+    if (!playerIdInput.value) {
+        playerIdInput.value = Math.floor(100000 + Math.random() * 900000).toString();
+    }
     mode.value = 'start';
 }
 
 function enterJoinMode() {
     mode.value = 'join';
-    roomInput.value = '';
+    // Keep existing roomInput if any (from localStorage or URL)
+    if (!roomInput.value) {
+        roomInput.value = '';
+    }
+     // Keep existing playerInput if any
+    if (!playerIdInput.value) {
+        playerIdInput.value = Math.floor(100000 + Math.random() * 900000).toString();
+    }
 }
 
 function join() {
-  if (roomInput.value) {
-    // Generate random 6-digit Player ID
-    const randomPlayerId = Math.floor(100000 + Math.random() * 900000).toString();
+  if (roomInput.value && playerIdInput.value) {
+    const playerId = playerIdInput.value;
 
     if (mode.value === 'start' || (mode.value === 'join' && !window.location.search.includes('room='))) {
         // Update URL without reloading
@@ -118,7 +156,12 @@ function join() {
         url.searchParams.set('room', roomInput.value);
         window.history.pushState({}, '', url);
     }
-    game.joinGame(roomInput.value, randomPlayerId);
+    
+    // Save to localStorage
+    localStorage.setItem('poker_tactics_roomId', roomInput.value);
+    localStorage.setItem('poker_tactics_playerId', playerId);
+
+    game.joinGame(roomInput.value, playerId);
   }
 }
 </script>

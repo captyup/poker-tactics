@@ -1,0 +1,50 @@
+{
+  "app": {
+    "title": "Poker Tactics",
+    "roomId": "Room ID",
+    "playerId": "Player ID",
+    "enter": "ENTER BATTLEFIELD"
+  },
+  "game": {
+    "opponent": "Opponent",
+    "score": "Score",
+    "rounds": "Rounds",
+    "passed": "PASSED",
+    "hand": "Hand",
+    "round": "Round",
+    "phase": "Phase",
+    "you": "YOU",
+    "pass": "PASS",
+    "confirmSwap": "Confirm Swap ({count})",
+    "confirmSwap_no_args": "Confirm Swap",
+    "waiting": "Waiting for game state...",
+    "tapToConfirm": "(Tap again to confirm)"
+  },
+  "message": {
+    "gameOver": "Game Over",
+    "mulliganPhase": "Mulligan Phase",
+    "yourTurn": "YOUR TURN",
+    "opponentTurn": "Opponent's Turn",
+    "victory": "VICTORY",
+    "draw": "DRAW",
+    "defeat": "DEFEAT",
+    "playAgain": "Play Again"
+  },
+  "medic": {
+    "title": "Select a card to Revive",
+    "empty": "Discard pile is empty.",
+    "cancel": "Cancel"
+  },
+  "card": {
+    "ability": "Ability",
+    "hint": {
+        "bondActive": "Bond Active! Will play for 6 Power (Total 12).",
+        "bondInactive": "Bond Unit: Base 2. Pairs boost to 6 each.",
+        "spy": "Spy: Goes to opponent (+10). Draw 2 cards.",
+        "medic": "Medic: Revive a non-Hero unit from discard.",
+        "hero": "Hero: 15 Power. Immune to effects.",
+        "scorch": "Scorch: Destroy strongest non-Hero unit(s).",
+        "decoy": "Decoy: Swap with a unit on board."
+    }
+  }
+}

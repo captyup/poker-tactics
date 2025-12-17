@@ -1,0 +1,203 @@
+use axum::{
+    http::HeaderValue,
+    routing::get,
+    Router,
+};
+use game_types::{GamePhase, GameState, Player};
+use serde::Deserialize;
+use socketioxide::{
+    extract::{Data, SocketRef},
+    SocketIo,
+};
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
+use tower::ServiceBuilder;
+use tower_http::cors::{Any, CorsLayer};
+use tracing::{info, Level};
+use tracing_subscriber::FmtSubscriber;
+
+mod game_logic;
+mod game_types;
+
+type Games = Arc<RwLock<HashMap<String, GameState>>>;
+
+#[derive(Debug, Deserialize)]
+struct JoinGamePayload {
+    room_id: String,
+    player_id: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct MulliganPayload {
+    room_id: String,
+    player_id: String,
+    card_ids: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PlayCardPayload {
+    room_id: String,
+    player_id: String,
+    card_id: String,
+    target_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PassPayload {
+    room_id: String,
+    player_id: String,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize tracing
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    info!("Starting server...");
+
+    // Global state
+    let games: Games = Arc::new(RwLock::new(HashMap::new()));
+
+    // Create Socket.IO layer
+    let (layer, io) = SocketIo::new_layer();
+
+    // Register a handler for the default namespace
+    let games_clone = games.clone();
+    io.ns("/", move |socket: SocketRef| async move {
+        info!("Socket connected: {}", socket.id);
+        let _ = socket.emit("connected", "Welcome"); // Send welcome message to verify connection
+        let games = games_clone.clone();
+
+        let games_join = games.clone();
+        socket.on("join_game", move |socket: SocketRef, Data::<JoinGamePayload>(data)| async move {
+            info!("Player {} joining room {}", data.player_id, data.room_id);
+            let _ = socket.leave_all();
+            let _ = socket.join(data.room_id.clone());
+
+            let mut games_guard = games_join.write().await;
+            
+            let game = games_guard.entry(data.room_id.clone()).or_insert_with(|| {
+                GameState {
+                    room_id: data.room_id.clone(),
+                    phase: GamePhase::Waiting,
+                    players: HashMap::new(),
+                    current_turn: String::new(),
+                    round_count: 0,
+                    deck: Vec::new(),
+                    winner: None,
+                }
+            });
+
+            if !game.players.contains_key(&data.player_id) {
+                if game.players.len() >= 2 {
+                    let _ = socket.emit("error", "Room is full");
+                    return;
+                }
+
+                game.players.insert(data.player_id.clone(), Player {
+                    id: data.player_id.clone(),
+                    hand: Vec::new(),
+                    board: Vec::new(),
+                    discard_pile: Vec::new(),
+                    current_score: 0,
+                    rounds_won: 0,
+                    passed: false,
+                });
+            }
+
+            if game.players.len() == 2 && game.phase == GamePhase::Waiting {
+                info!("Starting game in room {}", data.room_id);
+                let player_ids: Vec<String> = game.players.keys().cloned().collect();
+                let new_game_state = game_logic::init_game(data.room_id.clone(), player_ids);
+                *game = new_game_state;
+            }
+
+            info!("Broadcasting game state update for room {}: {:?}", data.room_id, game.phase);
+            let _ = socket.within(data.room_id.clone()).emit("game_state_update", &game.clone());
+        });
+
+        let games_mulligan = games.clone();
+        socket.on("mulligan", move |socket: SocketRef, Data::<MulliganPayload>(data)| async move {
+            let mut games_guard = games_mulligan.write().await;
+            if let Some(game) = games_guard.get_mut(&data.room_id) {
+                match game_logic::handle_mulligan(game, &data.player_id, data.card_ids) {
+                    Ok(_) => {
+                         let player = game.players.get_mut(&data.player_id).unwrap();
+                         player.passed = true; // Mark as ready
+
+                         let all_ready = game.players.values().all(|p| p.passed);
+                         if all_ready {
+                             game.phase = GamePhase::Playing;
+                             for p in game.players.values_mut() {
+                                 p.passed = false;
+                             }
+                         }
+
+                         let _ = socket.within(data.room_id.clone()).emit("game_state_update", &game.clone());
+                    },
+                    Err(e) => {
+                        let _ = socket.emit("error", &e);
+                    }
+                }
+            }
+        });
+
+        let games_play = games.clone();
+        socket.on("play_card", move |socket: SocketRef, Data::<PlayCardPayload>(data)| async move {
+            let mut games_guard = games_play.write().await;
+             if let Some(game) = games_guard.get_mut(&data.room_id) {
+                match game_logic::play_card(game, &data.player_id, &data.card_id, data.target_id) {
+                    Ok(_) => {
+                        let _ = socket.within(data.room_id.clone()).emit("game_state_update", &game.clone());
+                    },
+                    Err(e) => {
+                        let _ = socket.emit("error", &e);
+                    }
+                }
+             }
+        });
+
+        let games_pass = games.clone();
+        socket.on("pass", move |socket: SocketRef, Data::<PassPayload>(data)| async move {
+            let mut games_guard = games_pass.write().await;
+             if let Some(game) = games_guard.get_mut(&data.room_id) {
+                match game_logic::pass_turn(game, &data.player_id) {
+                    Ok(_) => {
+                        let _ = socket.within(data.room_id.clone()).emit("game_state_update", &game.clone());
+                    },
+                    Err(e) => {
+                        let _ = socket.emit("error", &e);
+                    }
+                }
+             }
+        });
+    });
+
+    // Configure CORS
+    let cors = CorsLayer::permissive();
+
+    // Build the Axum router
+    let app = Router::new()
+        .route("/", get(|| async { "Poker Tactics Server is running!" }))
+        .layer(
+            ServiceBuilder::new()
+                // .layer(cors)
+                .layer(layer),
+        );
+
+    // Run the server
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+    let addr = listener.local_addr()?;
+    info!("Server listening on {}", addr);
+    println!("Server listening on {}", addr);
+    
+    axum::serve(listener, app).await.unwrap();
+    
+    info!("Server stopped unexpectedly!");
+    println!("Server stopped unexpectedly!");
+
+    Ok(())
+}

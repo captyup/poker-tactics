@@ -1,0 +1,13 @@
+target/
+node_modules/
+dist/
+.git/
+.gitignore
+.env
+Dockerfile
+docker-compose.yml
+GEMINI.md
+README.md
+client/node_modules/
+client/dist/
+server/target/

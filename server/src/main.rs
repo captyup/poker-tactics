@@ -1,7 +1,4 @@
-use axum::{
-    routing::get,
-    Router,
-};
+use axum::Router;
 use game_types::{GamePhase, GameState, Player};
 use serde::Deserialize;
 use socketioxide::{
@@ -12,6 +9,7 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
+use tower_http::services::ServeDir;
 use tracing::{info, error, Level};
 use tracing_subscriber::FmtSubscriber;
 
@@ -201,7 +199,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Build the Axum router
     let app = Router::new()
-        .route("/", get(|| async { "Poker Tactics Server is running!" }))
+        .fallback_service(ServeDir::new("dist"))
         .layer(
             ServiceBuilder::new()
                 .layer(cors)

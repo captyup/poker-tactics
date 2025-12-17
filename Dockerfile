@@ -7,7 +7,7 @@ COPY client/ .
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM rust:1.83 AS backend-builder
+FROM rust:latest AS backend-builder
 WORKDIR /app/server
 # Copy manifest files to cache dependencies
 COPY server/Cargo.toml server/Cargo.lock ./

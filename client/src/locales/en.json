@@ -24,7 +24,9 @@
     "confirmSwap": "Confirm Swap ({count})",
     "confirmSwap_no_args": "Confirm Swap",
     "waiting": "Waiting for game state...",
-    "tapToConfirm": "(Tap again to confirm)"
+    "tapToConfirm": "(Tap again to confirm)",
+    "keepHand": "Keep Hand",
+    "mulliganHint": "Select up to 2 cards to swap, or confirm to keep your hand."
   },
   "message": {
     "gameOver": "Game Over",

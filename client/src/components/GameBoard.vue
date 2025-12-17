@@ -63,14 +63,17 @@
             class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded text-sm"
             @click="confirmMulligan"
         >
-            {{ selectedHandCards.length > 0 ? $t('game.confirmSwap', { count: selectedHandCards.length }) : $t('game.confirmSwap_no_args') }}
+            {{ selectedHandCards.length > 0 ? $t('game.confirmSwap', { count: selectedHandCards.length }) : $t('game.keepHand') }}
         </button>
       </div>
 
       <!-- Hint Area -->
-      <div v-if="selectedCardHint" class="mb-1 h-6 flex items-center justify-center w-full px-2">
-          <div class="bg-black/50 px-2 py-1 rounded text-yellow-300 font-bold animate-pulse text-xs md:text-sm truncate max-w-full text-center">
+      <div v-if="selectedCardHint || game.gameState?.phase === 'Mulligan'" class="mb-1 h-6 flex items-center justify-center w-full px-2">
+          <div v-if="selectedCardHint" class="bg-black/50 px-2 py-1 rounded text-yellow-300 font-bold animate-pulse text-xs md:text-sm truncate max-w-full text-center">
               {{ selectedCardHint }} <span class="text-white/70 font-normal text-[10px] ml-1 hidden md:inline">{{ $t('game.tapToConfirm') }}</span>
+          </div>
+          <div v-else-if="game.gameState?.phase === 'Mulligan'" class="bg-blue-900/80 px-2 py-1 rounded text-white text-xs md:text-sm text-center">
+              {{ $t('game.mulliganHint') }}
           </div>
       </div>
 

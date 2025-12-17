@@ -24,7 +24,9 @@
     "confirmSwap": "确认换牌 ({count})",
     "confirmSwap_no_args": "确认换牌",
     "waiting": "等待游戏状态...",
-    "tapToConfirm": "(再次点击确认)"
+    "tapToConfirm": "(再次点击确认)",
+    "keepHand": "确认不换牌",
+    "mulliganHint": "点击卡牌可选择换牌（最多2张），若满意手牌可直接点击右侧按钮。"
   },
   "message": {
     "gameOver": "游戏结束",

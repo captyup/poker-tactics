@@ -4,6 +4,14 @@ use rand::prelude::IndexedRandom;
 use rand::rng;
 use std::collections::HashMap;
 use uuid::Uuid;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+fn get_timestamp() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}
 
 pub fn create_deck() -> Vec<Card> {
     let mut deck = Vec::new();
@@ -124,6 +132,7 @@ pub fn init_game(room_id: String, player_ids: Vec<String>) -> GameState {
         round_count: 1,
         deck,
         winner: None,
+        last_update: get_timestamp(),
     }
 }
 
@@ -162,6 +171,7 @@ pub fn handle_mulligan(game: &mut GameState, player_id: &String, card_ids_to_rep
         }
     }
 
+    game.last_update = get_timestamp();
     Ok(())
 }
 
@@ -284,6 +294,8 @@ pub fn play_card(
         game.current_turn = opponent_id;
     }
 
+    game.last_update = get_timestamp();
+
     Ok(())
 }
 
@@ -306,6 +318,8 @@ pub fn pass_turn(game: &mut GameState, player_id: &String) -> Result<(), String>
     } else {
         game.current_turn = opponent_id;
     }
+
+    game.last_update = get_timestamp();
 
     Ok(())
 }

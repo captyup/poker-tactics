@@ -71,4 +71,5 @@ pub struct GameState {
     pub round_count: u32,
     pub deck: Vec<Card>,
     pub winner: Option<String>,           // Player ID of the match winner
+    pub last_update: u64, // Timestamp of last update
 }

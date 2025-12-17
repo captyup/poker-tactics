@@ -11,7 +11,10 @@ use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tower_http::services::ServeDir;
 use tracing::{info, error, Level};
+
 use tracing_subscriber::FmtSubscriber;
+use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::time::Duration;
 
 mod game_logic;
 mod game_types;
@@ -107,6 +110,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     round_count: 0,
                     deck: Vec::new(),
                     winner: None,
+                    last_update: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs(),
                 }
             });
 
@@ -126,6 +130,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     passed: false,
                 });
                 info!("Added player {} to game", data.player_id);
+                game.last_update = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
             }
 
             if game.players.len() == 2 && game.phase == GamePhase::Waiting {
@@ -235,6 +240,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .layer(cors)
                 .layer(layer),
         );
+
+
+
+    // Background task for room recycling
+    let games_cleanup = games.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(Duration::from_secs(600)); // Check every 10 minutes
+        loop {
+            interval.tick().await;
+            info!("Running room cleanup task...");
+            
+            let mut games_guard = games_cleanup.write().await;
+            let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+            let timeout = 3600; // 1 hour timeout
+            
+            let initial_count = games_guard.len();
+            games_guard.retain(|_, game| {
+                now - game.last_update < timeout
+            });
+            let removed_count = initial_count - games_guard.len();
+            
+            if removed_count > 0 {
+                info!("Removed {} inactive rooms. Remaining rooms: {}", removed_count, games_guard.len());
+            }
+        }
+    });
 
     // Run the server
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;

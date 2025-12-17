@@ -3,7 +3,7 @@
 /target/
 
 # Cargo files
-Cargo.lock
+# Cargo.lock
 
 # Specific to IDEs or build tools
 .idea/

@@ -119,13 +119,25 @@
     </div>
 
   </div>
-  <div v-else class="w-full h-full flex items-center justify-center text-white text-2xl">
-      {{ $t('game.waiting') }}
+  <div v-else class="w-full h-full flex flex-col items-center justify-center text-white gap-6">
+      <h2 class="text-3xl font-bold text-yellow-500 animate-pulse">{{ $t('app.waitingForOpponent') }}</h2>
+      
+      <div class="bg-gray-800 p-6 rounded-lg border border-gray-600 flex flex-col items-center gap-4 shadow-xl">
+          <div class="text-xl text-gray-300">{{ $t('app.roomIdDisplay', { roomId: game.roomId }) }}</div>
+          
+          <button 
+              @click="copyLink"
+              class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors"
+          >
+              <span v-if="copied">{{ $t('app.copied') }}</span>
+              <span v-else>{{ $t('app.copyLink') }}</span>
+          </button>
+      </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useGameStore } from '@/stores/game';
 import CardComponent from './CardComponent.vue';
 import type { Card } from '@/types/poker';
@@ -133,6 +145,18 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const game = useGameStore();
+
+const copied = ref(false);
+
+function copyLink() {
+    const url = `${window.location.origin}?room=${game.roomId}`;
+    navigator.clipboard.writeText(url).then(() => {
+        copied.value = true;
+        setTimeout(() => {
+            copied.value = false;
+        }, 2000);
+    });
+}
 
 const me = computed(() => {
     if (!game.gameState || !game.playerId) return null;

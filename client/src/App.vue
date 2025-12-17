@@ -19,6 +19,12 @@
           >
             {{ $t('app.joinGame') }}
           </button>
+          <button 
+            @click="showInstructions = true"
+            class="w-full bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 text-white font-bold py-4 rounded-lg transform transition hover:scale-105 shadow-xl text-xl"
+          >
+            {{ $t('instructions.title') }}
+          </button>
       </div>
 
       <div v-else class="bg-gray-800 p-8 rounded-lg shadow-2xl flex flex-col gap-4 w-96 border border-gray-700 relative">
@@ -52,6 +58,8 @@
     </div>
     
     <GameBoard v-else />
+    
+    <GameInstructions v-if="showInstructions" @close="showInstructions = false" />
   </div>
 </template>
 
@@ -60,10 +68,12 @@ import { ref, onMounted } from 'vue';
 import { useGameStore } from '@/stores/game';
 import GameBoard from '@/components/GameBoard.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import GameInstructions from '@/components/GameInstructions.vue';
 
 const game = useGameStore();
 const roomInput = ref('');
 const mode = ref<'start' | 'join' | null>(null);
+const showInstructions = ref(false);
 
 onMounted(() => {
     // Check URL query params

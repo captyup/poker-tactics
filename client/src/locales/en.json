@@ -3,7 +3,13 @@
     "title": "Poker Tactics",
     "roomId": "Room ID",
     "playerId": "Player ID",
-    "enter": "ENTER BATTLEFIELD"
+    "enter": "ENTER BATTLEFIELD",
+    "startNewGame": "START NEW GAME",
+    "joinGame": "JOIN GAME",
+    "copyLink": "COPY LINK",
+    "copied": "Copied!",
+    "roomIdDisplay": "Game Room ID: {roomId}",
+    "waitingForOpponent": "Waiting for opponent..."
   },
   "game": {
     "opponent": "Opponent",
@@ -38,13 +44,99 @@
   "card": {
     "ability": "Ability",
     "hint": {
-        "bondActive": "Bond Active! Will play for 6 Power (Total 12).",
-        "bondInactive": "Bond Unit: Base 2. Pairs boost to 6 each.",
-        "spy": "Spy: Goes to opponent (+10). Draw 2 cards.",
-        "medic": "Medic: Revive a non-Hero unit from discard.",
-        "hero": "Hero: 15 Power. Immune to effects.",
-        "scorch": "Scorch: Destroy strongest non-Hero unit(s).",
-        "decoy": "Decoy: Swap with a unit on board."
+      "bondActive": "Bond Active! Will play for 6 Power (Total 12).",
+      "bondInactive": "Bond Unit: Base 2. Pairs boost to 6 each.",
+      "spy": "Spy: Goes to opponent (+10). Draw 2 cards.",
+      "medic": "Medic: Revive a non-Hero unit from discard.",
+      "hero": "Hero: 15 Power. Immune to effects.",
+      "scorch": "Scorch: Destroy strongest non-Hero unit(s).",
+      "decoy": "Decoy: Swap with a unit on board."
+    }
+  },
+  "instructions": {
+    "title": "Game Guide",
+    "close": "Close",
+    "tabs": {
+      "intro": "Intro",
+      "cards": "Cards",
+      "gameplay": "Gameplay"
+    },
+    "intro": {
+      "goal": {
+        "title": "Goal",
+        "desc": "Poker Tactics is based on Gwent. You have 10 cards to win 2 out of 3 rounds by having more power than your opponent."
+      },
+      "core_mechanics": {
+        "title": "Core Mechanics",
+        "resource": "Resources: You only get 10 cards for the whole match. No drawing unless you use special cards.",
+        "bluff": "Bluffing: Knowing when to Pass (give up a round) to save strong cards is crucial.",
+        "combo": "Combos: Use Bond and Medic cards to maximize your score."
+      }
+    },
+    "cards": {
+      "units": {
+        "title": "Units",
+        "bond": {
+          "name": "Bond (2)",
+          "desc": "Base 2 power. If you have two 2s, they boost to 6 each (12 total)."
+        },
+        "soldier": {
+          "name": "Soldier (3-9)",
+          "desc": "Power equals face value. No special ability."
+        },
+        "heavy": {
+          "name": "Heavy (10)",
+          "desc": "High power unit. 10 points."
+        }
+      },
+      "special": {
+        "title": "Special Cards",
+        "spy": {
+          "name": "Spy (J)",
+          "desc": "Placed on OPPONENT'S board (+10 to them), but you draw 2 cards.",
+          "note": "Trade points for card advantage."
+        },
+        "medic": {
+          "name": "Medic (Q)",
+          "desc": "Revive a non-Hero unit from your discard pile.",
+          "note": "5 Power."
+        },
+        "hero": {
+          "name": "Hero (K)",
+          "desc": "15 Power. Immune to all effects (Scorch, Decoy, etc.).",
+          "note": "Reliable power."
+        },
+        "scorch": {
+          "name": "Scorch (A)",
+          "desc": "Destroy the strongest non-Hero unit(s) on the board.",
+          "note": "Affects both sides."
+        },
+        "decoy": {
+          "name": "Decoy (Joker)",
+          "desc": "Swap with a non-Hero unit on your board to return it to hand.",
+          "note": "Reuse abilities or save cards."
+        }
+      }
+    },
+    "gameplay": {
+      "setup": {
+        "title": "Setup",
+        "desc": "10 cards dealt. You can swap up to 2 cards."
+      },
+      "mulligan": {
+        "title": "Resource Lock",
+        "desc": "These 10 cards must last for 3 rounds. Conserve them wisely."
+      },
+      "round": {
+        "title": "Rounds",
+        "play": "Play: Turns alternate. Play one card per turn.",
+        "pass": "Pass: If you don't want to play more cards, Pass. You pass for the rest of the round.",
+        "resolve": "Resolve: When both pass, highest score wins the round."
+      },
+      "winning": {
+        "title": "Winning",
+        "desc": "First to win 2 rounds wins the match."
+      }
     }
   }
 }

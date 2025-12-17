@@ -1,6 +1,6 @@
 # Poker Tactics - 撲克戰略
 
-**Poker Tactics** 是一個基於網頁的卡牌戰略遊戲，改編自知名遊戲中的小遊戲，但使用標準撲克牌進行遊玩。遊戲核心在於**資源管理**與**心理博弈**。
+**Poker Tactics** 是一個基於網頁的卡牌戰略遊戲，改編自《巫師 3》中的昆特牌（Gwent），但使用標準撲克牌進行遊玩。遊戲核心在於**資源管理**與**心理博弈**。
 
 ## 📖 遊戲規則簡介
 
@@ -87,4 +87,18 @@ docker compose up -d
 *   `server/`: 後端 Rust 程式碼 (包含遊戲邏輯核心 `game_logic.rs`)
 *   `game-rules.md`: 詳細遊戲規則說明文档
 *   `GEMINI.md`: 專案上下文與開發筆記
+
+## ⚖️ 法律免責聲明 (Legal Disclaimer)
+
+### English
+This project is a fan-made creation and is not affiliated with, endorsed, or approved by CD Projekt Red.
+"Gwent" and "The Witcher" are registered trademarks of CD Projekt Red. All game mechanics heavily inspired by Gwent are implemented using standard playing cards to differentiate from the original IP.
+
+This project is strictly non-commercial and intended for educational and entertainment purposes only.
+
+### 繁體中文
+本專案為粉絲自製作品，與 CD Projekt Red 無任何官方關聯，亦未經其認可或贊助。
+「昆特牌 (Gwent)」與「巫師 (The Witcher)」為 CD Projekt Red 之註冊商標。本遊戲僅借鑒其遊玩機制，並使用標準撲克牌進行重新詮釋。
+
+本專案僅供教育與娛樂目的，嚴禁任何形式之商業用途。
 

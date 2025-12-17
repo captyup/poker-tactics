@@ -70,10 +70,14 @@ The project is a monorepo containing:
 
 2.  **Deploy:**
     ```bash
-    docker-compose up -d --build
+    # For production deployment with Cloudflare Tunnel
+    docker-compose up -d --build --build-arg VITE_APP_SOCKET_URL=https://poker-tactics.zenup.dev
     ```
     *   This builds the image (supporting ARM64 for RPi) and starts the game server along with the Cloudflare Tunnel agent.
+    *   **Important**: The `VITE_APP_SOCKET_URL` build argument ensures your client connects to the correct Cloudflare Tunnel URL.
     *   Access the game via your configured Cloudflare domain.
+
+    *Note: For local development, if you build directly without `--build-arg`, the client will default to `http://localhost:3000`.*
 
 ## Development Conventions
 

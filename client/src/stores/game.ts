@@ -13,10 +13,11 @@ export const useGameStore = defineStore('game', () => {
     function connect() {
         if (socket.value) return;
         
-        socket.value = io('http://localhost:3000');
+        const socketUrl = import.meta.env.VITE_APP_SOCKET_URL || 'http://localhost:3000';
+        socket.value = io(socketUrl);
         
         socket.value.on('connect', () => {
-            console.log('Connected');
+            console.log('Connected to', socketUrl);
         });
 
         socket.value.on('game_state_update', (state: GameState) => {

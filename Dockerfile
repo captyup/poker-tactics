@@ -4,6 +4,9 @@ WORKDIR /app/client
 COPY client/package*.json ./
 RUN npm install
 COPY client/ .
+# Pass the VITE_APP_SOCKET_URL as a build-arg and then set it as an environment variable for the build process
+ARG VITE_APP_SOCKET_URL=http://localhost:3000
+ENV VITE_APP_SOCKET_URL=$VITE_APP_SOCKET_URL
 RUN npm run build
 
 # Stage 2: Build Backend

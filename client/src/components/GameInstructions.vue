@@ -125,6 +125,16 @@
             </div>
         </div>
 
+        <!-- Reference Tab (New) -->
+        <div v-show="currentTab === 'reference'" class="flex flex-col items-center justify-center p-4">
+            <div class="w-full max-w-3xl bg-gray-900/50 p-2 rounded-lg border border-gray-700 shadow-xl">
+                <img src="/game-rules.jpg" alt="Game Rules Reference" class="w-full h-auto rounded shadow-sm" />
+            </div>
+            <p class="mt-4 text-gray-400 text-sm italic text-center">
+                {{ $t('instructions.intro.goal.desc') }}
+            </p>
+        </div>
+
       </div>
 
       <!-- Footer -->
@@ -152,7 +162,8 @@ const currentTab = ref('intro');
 const tabs = [
   { id: 'intro' },
   { id: 'cards' },
-  { id: 'gameplay' }
+  { id: 'gameplay' },
+  { id: 'reference' }
 ];
 
 const coreMechanics = computed(() => [

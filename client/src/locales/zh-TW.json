@@ -59,7 +59,8 @@
     "tabs": {
       "intro": "簡介",
       "cards": "卡牌功能",
-      "gameplay": "遊戲流程"
+      "gameplay": "遊戲流程",
+      "reference": "圖解"
     },
     "intro": {
       "goal": {

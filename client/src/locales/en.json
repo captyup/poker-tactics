@@ -59,7 +59,8 @@
     "tabs": {
       "intro": "Intro",
       "cards": "Cards",
-      "gameplay": "Gameplay"
+      "gameplay": "Gameplay",
+      "reference": "Reference"
     },
     "intro": {
       "goal": {

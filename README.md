@@ -4,6 +4,8 @@
 
 ## 📖 遊戲規則簡介
 
+![Game Rules](client/public/game-rules.jpg)
+
 本遊戲採用三戰兩勝制（Best of 3），玩家需要在有限的手牌資源中，策略性地贏得兩局勝利。
 
 ### 卡牌功能

@@ -9,7 +9,8 @@
     "copyLink": "COPY LINK",
     "copied": "Copied!",
     "roomIdDisplay": "Game Room ID: {roomId}",
-    "waitingForOpponent": "Waiting for opponent..."
+    "waitingForOpponent": "Waiting for opponent...",
+    "browseRooms": "Browse Rooms"
   },
   "game": {
     "opponent": "Opponent",

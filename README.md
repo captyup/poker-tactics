@@ -1,14 +1,41 @@
 # Poker Tactics - 撲克戰略
 
+**Poker Tactics** is a web-based card strategy game adapted from Gwent in "The Witcher 3", but played with standard poker cards. The core gameplay revolves around **resource management** and **psychological warfare**.
+
 **Poker Tactics** 是一個基於網頁的卡牌戰略遊戲，改編自《巫師 3》中的昆特牌（Gwent），但使用標準撲克牌進行遊玩。遊戲核心在於**資源管理**與**心理博弈**。
 
-## 📖 遊戲規則簡介
+## 📖 遊戲規則簡介 (Game Rules)
 
 ![Game Rules](client/public/game-rules.jpg)
 
+### English
+
+The game follows a **Best of 3** format. Players must strategically win two rounds using limited hand resources.
+
+#### Card Abilities
+| Card | Role | Power | Ability |
+| :--- | :--- | :--- | :--- |
+| **2** | Bond | 2 | If there are two **2s** on your side, both become **Power 6** (Total 12). |
+| **3-9** | Soldier | 3-9 | No special ability. Power equals face value. |
+| **10** | Heavy Infantry | 10 | High power unit. No special ability. |
+| **J** | Spy | 0 | Placed on opponent's field (opponent gets +10 points); you **draw 2 cards**. |
+| **Q** | Medic | 5 | **Resurrect** a non-Hero card from your discard pile and play it instantly. |
+| **K** | Hero | 15 | **Immune**. Unaffected by Scorch (A) and Decoy (Joker). |
+| **A** | Scorch | 0 | **Destroy** the strongest non-Hero unit(s) on the entire board (affects both sides). |
+| **Joker**| Decoy | 0 | **Return** a non-Hero card from your field to your hand. The Decoy remains on the field. |
+
+#### Gameplay Flow
+1.  **Starting Hand**: Each player is dealt 10 cards. You may mulligan (swap) up to 2 cards.
+2.  **Turn**: Players take turns playing one card at a time.
+3.  **Pass**: If you do not wish to play any more cards, you can Pass. Once passed, you cannot take further actions in the current round.
+4.  **Scoring**: When both players have passed, total power scores are compared. The higher score wins the round.
+5.  **Next Round**: All cards on the field are moved to the discard pile. **Note: Hands are not replenished** (unless using a Spy). You must play the next round with your remaining hand.
+
+### 繁體中文
+
 本遊戲採用三戰兩勝制（Best of 3），玩家需要在有限的手牌資源中，策略性地贏得兩局勝利。
 
-### 卡牌功能
+#### 卡牌功能
 | 牌面 | 角色 | 戰力 | 特殊能力 |
 | :--- | :--- | :--- | :--- |
 | **2** | 同袍兄弟 | 2 | 若場上有 2 張 **2**，戰力皆變為 6 (共 12 點)。 |
@@ -20,16 +47,16 @@
 | **A** | 灼燒 (Scorch)| 0 | **銷毀**全場當前戰力最高的非英雄單位（雙方都算）。 |
 | **鬼牌**| 稻草人 (Decoy)| 0 | 將場上一張非英雄牌**收回手牌**，鬼牌留場代替。 |
 
-### 遊戲流程
-1. **起手**：每人發 10 張牌，可調度（Mulligan）至多 2 張。
-2. **出牌**：雙方輪流出一張牌。
-3. **Pass**：若不想再出牌，可選擇 Pass。Pass 後該局無法再行動。
-4. **結算**：雙方都 Pass 後比較總點數，高者得 1 勝。
-5. **下一局**：場上所有牌移入棄牌堆。**注意：手牌不會補滿**（除非用間諜補牌），需用剩餘手牌進行下一局。
+#### 遊戲流程
+1.  **起手**：每人發 10 張牌，可調度（Mulligan）至多 2 張。
+2.  **出牌**：雙方輪流出一張牌。
+3.  **Pass**：若不想再出牌，可選擇 Pass。Pass 後該局無法再行動。
+4.  **結算**：雙方都 Pass 後比較總點數，高者得 1 勝。
+5.  **下一局**：場上所有牌移入棄牌堆。**注意：手牌不會補滿**（除非用間諜補牌），需用剩餘手牌進行下一局。
 
 ## 🛠️ 技術棧 (Tech Stack)
 
-此專案為 Monorepo 架構：
+此專案為 Monorepo 架構 (Monorepo Structure)：
 
 ### Client (Frontend)
 *   **Framework**: Vue 3
@@ -37,7 +64,7 @@
 *   **Language**: TypeScript
 *   **State Management**: Pinia
 *   **Styling**: Tailwind CSS
-*   **i18n**: vue-i18n (支援 繁體中文 / 简体中文 / English)
+*   **i18n**: vue-i18n (Support: EN / zh-TW / zh-CN)
 
 ### Server (Backend)
 *   **Language**: Rust
@@ -46,21 +73,21 @@
 
 ## 🚀 快速開始 (Getting Started)
 
-### 前置需求
+### 前置需求 (Prerequisites)
 *   Node.js (v20+)
-*   Rust (最新穩定版)
+*   Rust (Latest Stable)
 *   Docker & Docker Compose
 
 ### 本地開發 (Local Development)
 
-1.  **啟動後端伺服器 (Server)**
+1.  **Start Backend Server**
     ```bash
     cd server
     cargo run
     # Runs on http://0.0.0.0:3000
     ```
 
-2.  **啟動前端應用 (Client)**
+2.  **Start Frontend Client**
     ```bash
     cd client
     npm install
@@ -70,12 +97,14 @@
 
 ### Docker 部署 (Deployment)
 
+Use Docker Compose to start with one click (includes Cloudflare Tunnel support):
 使用 Docker Compose 一鍵啟動（包含 Cloudflare Tunnel 支援）：
 
 ```bash
 docker-compose up -d --build
 ```
 
+For custom Socket URL (e.g., production):
 若需指定 Socket URL (例如部署到生產環境)：
 
 ```bash
@@ -83,12 +112,12 @@ docker compose build --build-arg VITE_APP_SOCKET_URL=https://your-domain.com
 docker compose up -d
 ```
 
-## 📂 專案結構
+## 📂 專案結構 (Project Structure)
 
-*   `client/`: 前端程式碼
-*   `server/`: 後端 Rust 程式碼 (包含遊戲邏輯核心 `game_logic.rs`)
-*   `game-rules.md`: 詳細遊戲規則說明文档
-*   `GEMINI.md`: 專案上下文與開發筆記
+*   `client/`: Frontend Source Code (前端程式碼)
+*   `server/`: Backend Rust Code (後端程式碼 - contains `game_logic.rs`)
+*   `game-rules.md`: Detailed Game Rules (詳細遊戲規則)
+*   `GEMINI.md`: Project Context & Notes (專案上下文與開發筆記)
 
 ## ⚖️ 法律免責聲明 (Legal Disclaimer)
 

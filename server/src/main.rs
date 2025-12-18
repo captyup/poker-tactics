@@ -5,6 +5,7 @@ use socketioxide::{
     extract::{Data, SocketRef},
     SocketIo,
 };
+use serde::Serialize;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 use tower::ServiceBuilder;
@@ -25,6 +26,8 @@ type Games = Arc<RwLock<HashMap<String, GameState>>>;
 struct JoinGamePayload {
     room_id: String,
     player_id: String,
+    nickname: String,
+    avatar: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,6 +49,13 @@ struct PlayCardPayload {
 struct PassPayload {
     room_id: String,
     player_id: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
+struct RoomInfo {
+    id: String,
+    player_count: usize,
+    phase: GamePhase,
 }
 
 #[derive(Debug, Deserialize)]
@@ -122,6 +132,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 game.players.insert(data.player_id.clone(), Player {
                     id: data.player_id.clone(),
+                    nickname: data.nickname.clone(),
+                    avatar: data.avatar.clone(),
                     hand: Vec::new(),
                     board: Vec::new(),
                     discard_pile: Vec::new(),
@@ -131,12 +143,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 });
                 info!("Added player {} to game", data.player_id);
                 game.last_update = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+            } else {
+                // Update existing player info if reconnecting
+                if let Some(player) = game.players.get_mut(&data.player_id) {
+                    player.nickname = data.nickname.clone();
+                    player.avatar = data.avatar.clone();
+                }
             }
 
             if game.players.len() == 2 && game.phase == GamePhase::Waiting {
                 info!("Starting game in room {}", data.room_id);
                 let player_ids: Vec<String> = game.players.keys().cloned().collect();
-                let new_game_state = game_logic::init_game(data.room_id.clone(), player_ids);
+                let mut new_game_state = game_logic::init_game(data.room_id.clone(), player_ids);
+
+                // Preserve nicknames/avatars
+                for (pid, player) in &mut new_game_state.players {
+                    if let Some(old_player) = game.players.get(pid) {
+                        player.nickname = old_player.nickname.clone();
+                        player.avatar = old_player.avatar.clone();
+                    }
+                }
+
                 *game = new_game_state;
             }
 
@@ -219,12 +246,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 info!("Restarting game in room {}", data.room_id);
                 let player_ids: Vec<String> = game.players.keys().cloned().collect();
-                let new_game_state = game_logic::init_game(data.room_id.clone(), player_ids);
+                let mut new_game_state = game_logic::init_game(data.room_id.clone(), player_ids);
+
+                // Preserve nicknames/avatars
+                for (pid, player) in &mut new_game_state.players {
+                    if let Some(old_player) = game.players.get(pid) {
+                        player.nickname = old_player.nickname.clone();
+                        player.avatar = old_player.avatar.clone();
+                    }
+                }
+
                 *game = new_game_state;
                 
                 info!("Broadcasting new game state for room {}", data.room_id);
                 let _ = socket.within(data.room_id.clone()).emit("game_state_update", &game.clone()).await;
             }
+        });
+
+        let games_list = games.clone();
+        socket.on("list_rooms", move |socket: SocketRef| async move {
+            let games_guard = games_list.read().await;
+            let rooms: Vec<RoomInfo> = games_guard.values().map(|g| RoomInfo {
+                id: g.room_id.clone(),
+                player_count: g.players.len(),
+                phase: g.phase.clone(),
+            }).collect();
+            let _ = socket.emit("rooms_list", &rooms);
         });
     });
 

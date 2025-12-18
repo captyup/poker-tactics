@@ -113,6 +113,8 @@ pub fn init_game(room_id: String, player_ids: Vec<String>) -> GameState {
 
         players.insert(id.clone(), Player {
             id: id.clone(),
+            nickname: "".to_string(), // Will be populated by main.rs on join/rejoin
+            avatar: "".to_string(),
             hand,
             board: Vec::new(),
             discard_pile: Vec::new(),

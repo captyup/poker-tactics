@@ -9,7 +9,8 @@
     "copyLink": "複製連結",
     "copied": "已複製!",
     "roomIdDisplay": "遊戲房號: {roomId}",
-    "waitingForOpponent": "等待對手加入..."
+    "waitingForOpponent": "等待對手加入...",
+    "browseRooms": "瀏覽房間"
   },
   "game": {
     "opponent": "對手",

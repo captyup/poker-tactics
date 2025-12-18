@@ -2,10 +2,13 @@ import { defineStore } from 'pinia';
 import { io, type Socket } from 'socket.io-client';
 import type { GameState } from '@/types/poker';
 import { ref } from 'vue';
+import { useUserStore } from './user';
+import { soundManager } from '@/utils/sound';
 
 export const useGameStore = defineStore('game', () => {
     const socket = ref<Socket | null>(null);
     const gameState = ref<GameState | null>(null);
+    const availableRooms = ref<any[]>([]); // Using any[] for now, or define RoomInfo interface
     const playerId = ref('');
     const roomId = ref('');
     const error = ref('');
@@ -22,8 +25,32 @@ export const useGameStore = defineStore('game', () => {
 
         socket.value.on('game_state_update', (state: GameState) => {
             console.log('Game State Updated:', state);
+
+            // Simple sound triggers based on state changes (naive approach)
+            // Ideally we'd compare old state vs new state to detect events
+            if (gameState.value) {
+                // If it was my turn and now it's not (played a card)
+                if (gameState.value.current_turn === playerId.value && state.current_turn !== playerId.value) {
+                     soundManager.play('play');
+                }
+
+                // If round count changed
+                if (gameState.value.round_count !== state.round_count) {
+                    soundManager.play('round_end');
+                }
+
+                // If winner
+                if (!gameState.value.winner && state.winner) {
+                    soundManager.play(state.winner === playerId.value ? 'win' : 'lose');
+                }
+            }
+
             gameState.value = state;
             error.value = '';
+        });
+
+        socket.value.on('rooms_list', (rooms: any[]) => {
+            availableRooms.value = rooms;
         });
 
         socket.value.on('error', (msg: string) => {
@@ -36,8 +63,15 @@ export const useGameStore = defineStore('game', () => {
         connect();
         roomId.value = room;
         playerId.value = player;
-        // Delay emit slightly to ensure connection? No, socket.io buffers.
-        socket.value?.emit('join_game', { room_id: room, player_id: player });
+
+        const userStore = useUserStore();
+
+        socket.value?.emit('join_game', {
+            room_id: room,
+            player_id: player,
+            nickname: userStore.nickname,
+            avatar: userStore.avatar
+        });
     }
 
     function mulligan(cardIds: string[]) {
@@ -71,9 +105,15 @@ export const useGameStore = defineStore('game', () => {
         });
     }
 
+    function fetchRooms() {
+        connect();
+        socket.value?.emit('list_rooms');
+    }
+
     return {
         socket,
         gameState,
+        availableRooms,
         playerId,
         roomId,
         error,
@@ -81,6 +121,7 @@ export const useGameStore = defineStore('game', () => {
         mulligan,
         playCard,
         passTurn,
-        restartGame
+        restartGame,
+        fetchRooms
     };
 });

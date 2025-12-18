@@ -18,6 +18,8 @@ export interface Card {
 
 export interface Player {
     id: string;
+    nickname: string;
+    avatar: string;
     hand: Card[];
     board: Card[];
     discard_pile: Card[];

@@ -19,6 +19,12 @@
           >
             {{ $t('app.joinGame') }}
           </button>
+          <button
+            @click="enterBrowseMode"
+            class="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white font-bold py-4 rounded-lg transform transition hover:scale-105 shadow-xl text-xl"
+          >
+            {{ $t('app.browseRooms') || 'Browse Rooms' }}
+          </button>
           <button 
             @click="showInstructions = true"
             class="w-full bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 text-white font-bold py-4 rounded-lg transform transition hover:scale-105 shadow-xl text-xl"
@@ -42,33 +48,76 @@
             ✕
         </button>
         <h2 class="text-2xl font-bold text-center mb-4 text-blue-400">
-            {{ mode === 'start' ? $t('app.startNewGame') : $t('app.joinGame') }}
+            {{ mode === 'start' ? $t('app.startNewGame') : (mode === 'join' ? $t('app.joinGame') : 'Browse Rooms') }}
         </h2>
+
+        <!-- Profile Settings (Only show in start/join/browse if not joined) -->
+        <div class="mb-4 border-b border-gray-700 pb-4">
+            <label class="block text-sm font-bold mb-2 text-gray-300">Nickname</label>
+            <input v-model="nicknameInput" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500 mb-2" placeholder="Your Name" />
+
+            <label class="block text-sm font-bold mb-2 text-gray-300">Avatar</label>
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600">
+                <button
+                    v-for="av in avatars"
+                    :key="av"
+                    @click="avatarInput = av"
+                    class="text-2xl hover:bg-gray-700 rounded p-1 transition-colors"
+                    :class="{ 'bg-blue-600 bg-opacity-50': avatarInput === av }"
+                >
+                    {{ av }}
+                </button>
+            </div>
+        </div>
 
         <div v-if="mode === 'join'">
            <label class="block text-sm font-bold mb-2 text-gray-300">{{ $t('app.roomId') }}</label>
            <input v-model="roomInput" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500 mb-4" placeholder="e.g. 123456" @keyup.enter="join" />
+
+           <button
+              @click="join"
+              class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white font-bold py-3 rounded mt-4 transform transition hover:scale-105"
+              :disabled="!roomInput || !nicknameInput"
+            >
+              {{ $t('app.enter') }}
+            </button>
         </div>
         
-        <div v-else>
+        <div v-else-if="mode === 'start'">
              <label class="block text-sm font-bold mb-2 text-gray-300">{{ $t('app.roomId') }}</label>
              <div class="text-2xl font-mono font-bold text-green-400 text-center py-2 bg-gray-900 rounded border border-gray-700 mb-4">
                  {{ roomInput }}
              </div>
+
+             <button
+              @click="join"
+              class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white font-bold py-3 rounded mt-4 transform transition hover:scale-105"
+              :disabled="!roomInput || !nicknameInput"
+            >
+              {{ $t('app.enter') }}
+            </button>
         </div>
 
-        <div>
-            <label class="block text-sm font-bold mb-2 text-gray-300">Player ID</label>
-            <input v-model="playerIdInput" class="w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. 987654" @keyup.enter="join" />
+        <div v-else-if="mode === 'browse'">
+            <div class="flex flex-col gap-2 max-h-60 overflow-y-auto">
+                <div v-if="game.availableRooms.length === 0" class="text-center text-gray-500 py-4">
+                    No active rooms found.
+                </div>
+                <div
+                    v-for="room in game.availableRooms"
+                    :key="room.id"
+                    class="bg-gray-700 p-3 rounded flex justify-between items-center hover:bg-gray-600 cursor-pointer transition-colors"
+                    @click="selectRoom(room.id)"
+                >
+                    <span class="font-mono font-bold">{{ room.id }}</span>
+                    <span class="text-sm px-2 py-1 rounded" :class="room.player_count < 2 ? 'bg-green-600' : 'bg-red-600'">
+                        {{ room.player_count }}/2
+                    </span>
+                </div>
+            </div>
+            <button @click="game.fetchRooms()" class="mt-4 text-blue-400 hover:text-white text-sm underline w-full text-center">Refresh List</button>
         </div>
 
-        <button 
-          @click="join" 
-          class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white font-bold py-3 rounded mt-4 transform transition hover:scale-105"
-          :disabled="!roomInput || !playerIdInput"
-        >
-          {{ $t('app.enter') }}
-        </button>
       </div>
     </div>
     
@@ -81,15 +130,21 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useGameStore } from '@/stores/game';
+import { useUserStore } from '@/stores/user';
 import GameBoard from '@/components/GameBoard.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import GameInstructions from '@/components/GameInstructions.vue';
 
 const game = useGameStore();
+const user = useUserStore();
 const roomInput = ref('');
 const playerIdInput = ref('');
-const mode = ref<'start' | 'join' | null>(null);
+const nicknameInput = ref(user.nickname);
+const avatarInput = ref(user.avatar);
+const mode = ref<'start' | 'join' | 'browse' | null>(null);
 const showInstructions = ref(false);
+
+const avatars = ['👤', '🤖', '🦊', '🐱', '🐶', '🦁', '🐯', '🐸', '🐵', '🐔', '🐧', '🦄', '👻', '👽', '💀', '🤡'];
 
 onMounted(() => {
     // Check URL query params
@@ -103,9 +158,6 @@ onMounted(() => {
     if (roomParam) {
         roomInput.value = roomParam;
         mode.value = 'join';
-        // If we have a saved player ID and the room matches (or we just want to reuse the player ID generally)
-        // Ideally we only reuse player ID if we think it's the same session. 
-        // But for simplicity, if we have a saved player ID, let's pre-fill it.
         if (savedPlayerId) {
              playerIdInput.value = savedPlayerId;
         }
@@ -113,14 +165,16 @@ onMounted(() => {
         // If no URL param, but we have saved state, we can pre-fill
         roomInput.value = savedRoomId;
         playerIdInput.value = savedPlayerId;
-        // Optionally auto-enter join mode if we have data
-        // mode.value = 'join'; 
     }
     
     // If no player ID yet, generate one random default
     if (!playerIdInput.value) {
         playerIdInput.value = Math.floor(100000 + Math.random() * 900000).toString();
     }
+
+    // Sync inputs if store has data
+    nicknameInput.value = user.nickname;
+    avatarInput.value = user.avatar;
 });
 
 function startNewGame() {
@@ -146,9 +200,26 @@ function enterJoinMode() {
     }
 }
 
+function enterBrowseMode() {
+    mode.value = 'browse';
+    game.fetchRooms();
+     // Keep existing playerInput if any
+    if (!playerIdInput.value) {
+        playerIdInput.value = Math.floor(100000 + Math.random() * 900000).toString();
+    }
+}
+
+function selectRoom(id: string) {
+    roomInput.value = id;
+    join();
+}
+
 function join() {
-  if (roomInput.value && playerIdInput.value) {
+  if (roomInput.value && nicknameInput.value) {
     const playerId = playerIdInput.value;
+
+    // Save Profile
+    user.setProfile(nicknameInput.value, avatarInput.value);
 
     if (mode.value === 'start' || (mode.value === 'join' && !window.location.search.includes('room='))) {
         // Update URL without reloading

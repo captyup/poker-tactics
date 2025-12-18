@@ -3,7 +3,10 @@
     <!-- Opponent Area -->
     <div class="opponent-area flex-1 flex flex-col items-center justify-start border-b border-green-700/50 pb-2 mt-8 md:mt-0">
       <div class="flex flex-wrap items-center justify-center gap-2 mb-2 px-2">
-        <h2 class="text-xl font-bold mr-2">{{ $t('game.opponent') }}</h2>
+        <h2 class="text-xl font-bold mr-2 flex items-center gap-2">
+            {{ opponent?.avatar || '👤' }}
+            {{ opponent?.nickname || $t('game.opponent') }}
+        </h2>
         <div class="badge bg-blue-600 px-2 py-1 rounded text-sm">{{ $t('game.score') }}: {{ opponent?.current_score }}</div>
         <div class="badge bg-yellow-600 px-2 py-1 rounded text-sm">{{ $t('game.rounds') }}: {{ opponent?.rounds_won }}</div>
         <div v-if="opponent?.passed" class="badge bg-gray-500 px-2 py-1 rounded text-sm">{{ $t('game.passed') }}</div>
@@ -11,14 +14,14 @@
       </div>
       
       <!-- Opponent Board -->
-      <div class="flex gap-2 flex-wrap justify-center min-h-[140px] overflow-y-auto max-h-[30vh]">
+      <TransitionGroup name="board" tag="div" class="flex gap-2 flex-wrap justify-center min-h-[140px] overflow-y-auto max-h-[30vh]">
         <CardComponent 
           v-for="card in opponent?.board" 
           :key="card.id" 
           :card="card" 
           class="scale-75 origin-top"
         />
-      </div>
+      </TransitionGroup>
     </div>
 
     <!-- Center Info -->
@@ -33,7 +36,7 @@
     <!-- My Area -->
     <div class="my-area flex-1 flex flex-col items-center justify-end pt-2 border-t border-green-700/50 overflow-hidden">
        <!-- My Board -->
-      <div class="flex gap-2 flex-wrap justify-center min-h-[100px] md:min-h-[140px] mb-2 overflow-y-auto max-h-[30vh]">
+      <TransitionGroup name="board" tag="div" class="flex gap-2 flex-wrap justify-center min-h-[100px] md:min-h-[140px] mb-2 overflow-y-auto max-h-[30vh]">
         <CardComponent 
           v-for="card in me?.board" 
           :key="card.id" 
@@ -41,11 +44,14 @@
           class="scale-75 origin-bottom"
           @click="handleBoardClick(card)"
         />
-      </div>
+      </TransitionGroup>
 
       <!-- My Info -->
       <div class="flex flex-wrap items-center justify-center gap-2 mb-2 px-2">
-        <h2 class="text-xl font-bold text-green-300 mr-2">{{ $t('game.you') }}</h2>
+        <h2 class="text-xl font-bold text-green-300 mr-2 flex items-center gap-2">
+            {{ me?.avatar || '👤' }}
+            {{ me?.nickname || $t('game.you') }}
+        </h2>
         <div class="badge bg-blue-600 px-2 py-1 rounded text-sm">{{ $t('game.score') }}: {{ me?.current_score }}</div>
         <div class="badge bg-yellow-600 px-2 py-1 rounded text-sm">{{ $t('game.rounds') }}: {{ me?.rounds_won }}</div>
         <div v-if="me?.passed" class="badge bg-gray-500 px-2 py-1 rounded text-sm">{{ $t('game.passed') }}</div>
@@ -79,7 +85,7 @@
 
       <!-- My Hand (Scrollable) -->
       <div class="w-full overflow-x-auto pb-4 pt-4 px-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-        <div class="flex flex-nowrap min-w-min justify-center -space-x-4 md:-space-x-6">
+        <TransitionGroup name="hand" tag="div" class="flex flex-nowrap min-w-min justify-center -space-x-4 md:-space-x-6">
             <CardComponent 
             v-for="card in sortedHand" 
             :key="card.id" 
@@ -88,7 +94,7 @@
             @click="handleHandClick(card)"
             class="transition-all hover:z-10 hover:-translate-y-4 hover:scale-105 flex-shrink-0"
             />
-        </div>
+        </TransitionGroup>
       </div>
     </div>
 
@@ -330,3 +336,27 @@ const validMedicTargets = computed(() => {
 });
 
 </script>
+
+<style scoped>
+/* Board Card Animations */
+.board-enter-active,
+.board-leave-active {
+  transition: all 0.5s ease;
+}
+.board-enter-from,
+.board-leave-to {
+  opacity: 0;
+  transform: translateY(20px) scale(0.5);
+}
+
+/* Hand Card Animations */
+.hand-enter-active,
+.hand-leave-active {
+  transition: all 0.5s ease;
+}
+.hand-enter-from,
+.hand-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+</style>

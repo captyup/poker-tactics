@@ -54,6 +54,8 @@ pub struct Card {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     pub id: String,
+    pub nickname: String,
+    pub avatar: String,
     pub hand: Vec<Card>,
     pub board: Vec<Card>,         // Cards currently on this player's side of the field
     pub discard_pile: Vec<Card>,  // Cards in the graveyard

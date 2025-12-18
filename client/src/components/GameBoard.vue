@@ -14,7 +14,8 @@
       </div>
       
       <!-- Opponent Board -->
-      <TransitionGroup name="board" tag="div" class="flex gap-2 flex-wrap justify-center min-h-[140px] overflow-y-auto max-h-[30vh]">
+      <!-- Opponent Board -->
+      <TransitionGroup name="opponent-board" tag="div" class="flex gap-2 p-2 flex-wrap justify-center min-h-[140px] overflow-hidden max-h-[30vh]">
         <CardComponent 
           v-for="card in opponent?.board" 
           :key="card.id" 
@@ -36,7 +37,8 @@
     <!-- My Area -->
     <div class="my-area flex-1 flex flex-col items-center justify-end pt-2 border-t border-green-700/50 overflow-hidden">
        <!-- My Board -->
-      <TransitionGroup name="board" tag="div" class="flex gap-2 flex-wrap justify-center min-h-[100px] md:min-h-[140px] mb-2 overflow-y-auto max-h-[30vh]">
+       <!-- My Board -->
+      <TransitionGroup name="my-board" tag="div" class="flex gap-2 p-2 flex-wrap justify-center min-h-[100px] md:min-h-[140px] mb-2 overflow-hidden max-h-[30vh]">
         <CardComponent 
           v-for="card in me?.board" 
           :key="card.id" 
@@ -84,8 +86,8 @@
       </div>
 
       <!-- My Hand (Scrollable) -->
-      <div class="w-full overflow-x-auto pb-4 pt-4 px-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-        <TransitionGroup name="hand" tag="div" class="flex flex-nowrap min-w-min justify-center -space-x-4 md:-space-x-6">
+      <div class="w-full overflow-x-auto overflow-y-hidden pb-4 pt-4 px-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+        <TransitionGroup name="hand" tag="div" class="relative flex flex-nowrap min-w-min justify-center -space-x-4 md:-space-x-6">
             <CardComponent 
             v-for="card in sortedHand" 
             :key="card.id" 
@@ -338,25 +340,66 @@ const validMedicTargets = computed(() => {
 </script>
 
 <style scoped>
-/* Board Card Animations */
-.board-enter-active,
-.board-leave-active {
-  transition: all 0.5s ease;
+/* My Board Animations (Bottom Up) */
+.my-board-move,
+.my-board-enter-active,
+.my-board-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
 }
-.board-enter-from,
-.board-leave-to {
+
+.my-board-leave-active {
+  position: absolute;
+}
+
+.my-board-enter-from {
   opacity: 0;
-  transform: translateY(20px) scale(0.5);
+  transform: translateY(30px) scale(0.5);
+}
+
+.my-board-leave-to {
+  opacity: 0;
+  transform: scale(0);
+}
+
+/* Opponent Board Animations (Top Down) */
+.opponent-board-move,
+.opponent-board-enter-active,
+.opponent-board-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.opponent-board-leave-active {
+  position: absolute;
+}
+
+.opponent-board-enter-from {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.5); /* From top */
+}
+
+.opponent-board-leave-to {
+  opacity: 0;
+  transform: scale(0);
 }
 
 /* Hand Card Animations */
+.hand-move,
 .hand-enter-active,
 .hand-leave-active {
   transition: all 0.5s ease;
 }
-.hand-enter-from,
-.hand-leave-to {
+
+.hand-leave-active {
+  position: absolute;
+}
+
+.hand-enter-from {
   opacity: 0;
   transform: translateY(30px);
+}
+
+.hand-leave-to {
+  opacity: 0;
+  transform: translateY(-40px) scale(0.5); /* Throw card up/forward */
 }
 </style>
